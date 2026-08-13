@@ -200,30 +200,12 @@
 <section class="gallery-hero">
   <div class="container">
     <span class="section-tag">Event Gallery</span>
-    <h1>July Networking Morning</h1>
+    <h1>Gallery</h1>
     <p class="gallery-hero-meta">
-      Thursday, 9 July 2026
-      <span>·</span>
-      Rashays Shellharbour
-    </p>
-    <p class="gallery-photo-credit">
-      Photos by Luke Neofytou of <a href="https://www.modifiedphotography.com.au" target="_blank" rel="noopener noreferrer">Modified Photography</a>
+      Images from recent Shellharbour &amp; Beyond Networking events.
     </p>
   </div>
 </section>
-
-<!-- FILTER BAR -->
-<div class="gallery-filter-bar">
-  <div class="gallery-filter-inner">
-    <span class="gallery-filter-label">Filter by event</span>
-    <button class="filter-chip active" data-filter="all">
-      All <span class="chip-count" id="count-all">20</span>
-    </button>
-    <button class="filter-chip" data-filter="2026-07-09">
-      9 July 2026 <span class="chip-count" id="count-jul">20</span>
-    </button>
-  </div>
-</div>
 
 <!-- GALLERY -->
 <section class="gallery-section">
@@ -237,8 +219,8 @@
   <button class="lb-arrow" id="lb-next" aria-label="Next">&#8250;</button>
   <img id="lightbox-img" src="" alt="SHBNG event photo"/>
   <div id="lightbox-meta">
-    <div class="lb-event">Thursday, 9 July 2026 &nbsp;·&nbsp; Rashays Shellharbour</div>
-    <div class="lb-credit">Photos by Luke Neofytou of <a href="https://www.modifiedphotography.com.au" target="_blank" rel="noopener noreferrer">Modified Photography</a></div>
+    <div class="lb-event" id="lb-event"></div>
+    <div class="lb-credit" id="lb-credit"></div>
   </div>
 </div>
 
@@ -282,6 +264,12 @@
 <script>
 // ── PHOTO DATA ──
 const PHOTOS = [
+  { src: 'uploads/events/shbng-20260813-1.jpeg', date: '2026-08-13', noCredit: true },
+  { src: 'uploads/events/shbng-20260813-2.jpeg', date: '2026-08-13', noCredit: true },
+  { src: 'uploads/events/shbng-20260813-3.jpeg', date: '2026-08-13', noCredit: true },
+  { src: 'uploads/events/shbng-20260813-4.jpeg', date: '2026-08-13', noCredit: true },
+  { src: 'uploads/events/shbng-20260813-5.jpeg', date: '2026-08-13', noCredit: true },
+  { src: 'uploads/events/shbng-20260813-6.jpeg', date: '2026-08-13', noCredit: true },
   { src: 'uploads/events/MP107542SHBNG20260709.jpg',   date: '2026-07-09' },
   { src: 'uploads/events/MP107545SHBNG20260709.jpg',   date: '2026-07-09' },
   { src: 'uploads/events/MP107550SHBNG20260709.jpg',   date: '2026-07-09' },
@@ -289,7 +277,6 @@ const PHOTOS = [
   { src: 'uploads/events/MP107582SHBNG20260709.jpg',   date: '2026-07-09' },
   { src: 'uploads/events/MP107587SHBNG20260709.jpg',   date: '2026-07-09' },
   { src: 'uploads/events/MP107592SHBNG20260709.jpg',   date: '2026-07-09' },
-  { src: 'uploads/events/MP107599SHBNG20260709.jpg',   date: '2026-07-09' },
   { src: 'uploads/events/MP107602SHBNG20260709.jpg',   date: '2026-07-09' },
   { src: 'uploads/events/MP107627SHBNG20260709.jpg',   date: '2026-07-09' },
   { src: 'uploads/events/MP107637SHBNG20260709.jpg',   date: '2026-07-09' },
@@ -302,21 +289,22 @@ const PHOTOS = [
   { src: 'uploads/events/MP107729-2SHBNG20260709.jpg', date: '2026-07-09' },
   { src: 'uploads/events/MP107729-3SHBNG20260709.jpg', date: '2026-07-09' },
   { src: 'uploads/events/MP107731SHBNG20260709.jpg',   date: '2026-07-09' },
+  { src: 'uploads/hero-networking-group.jpg', noCredit: true },
+  { src: 'uploads/shbng-network2.jpg', noCredit: true },
+  { src: 'uploads/shbng-network3.jpg', noCredit: true },
+  { src: 'uploads/shbng-network4.jpg', noCredit: true },
+  { src: 'uploads/shellharbour-beyond-networking-members-ariels-cafe.jpg', noCredit: true },
+  { src: 'uploads/shbng-casanova.jpg', noCredit: true },
+  { src: 'uploads/20260611SHBNG-1.jpg', noCredit: true },
+  { src: 'uploads/20260611SHBNG-9.jpg', noCredit: true },
 ];
 
-// ── SHUFFLE ──
-function shuffle(arr) {
-  const a = [...arr];
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [a[i], a[j]] = [a[j], a[i]];
-  }
-  return a;
-}
-
-const DATE_LABELS = { '2026-07-09': '9 July 2026' };
-let shuffled = shuffle(PHOTOS);
-let currentFilter = 'all';
+const DATE_LABELS = { '2026-07-09': '9 July 2026', '2026-08-13': '13 August 2026' };
+const EVENT_LABELS = {
+  '2026-07-09': 'Thursday, 9 July 2026 &nbsp;·&nbsp; Rashays Shellharbour',
+  '2026-08-13': 'Thursday, 13 August 2026 &nbsp;·&nbsp; Rashays Shellharbour'
+};
+const CREDIT_HTML = 'Photos by Luke Neofytou of <a href="https://www.modifiedphotography.com.au" target="_blank" rel="noopener noreferrer">Modified Photography</a>';
 let visible = [];
 let currentIndex = 0;
 
@@ -328,15 +316,17 @@ function render(photos) {
   photos.forEach((p, i) => {
     const item = document.createElement('div');
     item.className = 'gallery-item';
-    item.dataset.date = p.date;
+    item.dataset.date = p.date || '';
+    const dateLabel = p.date ? (DATE_LABELS[p.date] || p.date) : '';
     item.innerHTML = `
-      <img src="${p.src}" alt="SHBNG ${DATE_LABELS[p.date] || p.date} networking event" loading="lazy"/>
+      <img src="${p.src}" alt="SHBNG ${dateLabel ? dateLabel + ' ' : ''}networking event" loading="lazy"/>
+      ${dateLabel ? `
       <div class="gallery-item-overlay">
         <div class="gallery-item-date">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-          ${DATE_LABELS[p.date] || p.date}
+          ${dateLabel}
         </div>
-      </div>
+      </div>` : ''}
     `;
     item.addEventListener('click', () => openLightbox(i));
     grid.appendChild(item);
@@ -344,12 +334,22 @@ function render(photos) {
 }
 
 // ── LIGHTBOX ──
-const lb      = document.getElementById('gallery-lightbox');
-const lbImg   = document.getElementById('lightbox-img');
+const lb        = document.getElementById('gallery-lightbox');
+const lbImg     = document.getElementById('lightbox-img');
+const lbEvent   = document.getElementById('lb-event');
+const lbCredit  = document.getElementById('lb-credit');
 
+function updateLightboxMeta(p) {
+  const eventLabel = p.date ? (EVENT_LABELS[p.date] || DATE_LABELS[p.date] || p.date) : '';
+  lbEvent.innerHTML = eventLabel;
+  lbEvent.style.display = eventLabel ? '' : 'none';
+  lbCredit.innerHTML = p.noCredit ? '' : CREDIT_HTML;
+  lbCredit.style.display = p.noCredit ? 'none' : '';
+}
 function openLightbox(idx) {
   currentIndex = idx;
   lbImg.src = visible[idx].src;
+  updateLightboxMeta(visible[idx]);
   lb.classList.add('open');
   document.body.style.overflow = 'hidden';
 }
@@ -358,8 +358,8 @@ function closeLightbox() {
   document.body.style.overflow = '';
   lbImg.src = '';
 }
-function showPrev() { currentIndex = (currentIndex - 1 + visible.length) % visible.length; lbImg.src = visible[currentIndex].src; }
-function showNext() { currentIndex = (currentIndex + 1) % visible.length; lbImg.src = visible[currentIndex].src; }
+function showPrev() { currentIndex = (currentIndex - 1 + visible.length) % visible.length; lbImg.src = visible[currentIndex].src; updateLightboxMeta(visible[currentIndex]); }
+function showNext() { currentIndex = (currentIndex + 1) % visible.length; lbImg.src = visible[currentIndex].src; updateLightboxMeta(visible[currentIndex]); }
 
 document.getElementById('lightbox-close').addEventListener('click', closeLightbox);
 document.getElementById('lb-prev').addEventListener('click', showPrev);
@@ -372,19 +372,8 @@ document.addEventListener('keydown', e => {
   if (e.key === 'ArrowRight') showNext();
 });
 
-// ── FILTER ──
-document.querySelectorAll('.filter-chip').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.filter-chip').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    currentFilter = btn.dataset.filter;
-    const filtered = currentFilter === 'all' ? shuffled : shuffled.filter(p => p.date === currentFilter);
-    render(filtered);
-  });
-});
-
 // ── INIT ──
-render(shuffled);
+render(PHOTOS);
 
 // ── NAV ──
 const nav = document.getElementById('main-nav');
